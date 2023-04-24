@@ -1,8 +1,4 @@
 ---
-- name: apt | Add git PPA
-  apt_repository:
-    repo: ppa:git-core/ppa
-
 - name: apt | apt update
   apt:
     update_cache: yes

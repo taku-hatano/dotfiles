@@ -25,7 +25,7 @@ echo "Have you registered your SSH key with ${GIT_HOST}?"
 read -p "If not, please do so and press enter: "
 
 echo "#### Make sure you can connect to ${GIT_HOST} ####"
-ssh -T git@${GIT_HOST}
+ssh -T git@${GIT_HOST} || true
 
 DATA_DIR=${DATA_DIR:-"/data"}
 sudo mkdir -p -m 777 /data

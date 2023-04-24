@@ -30,6 +30,3 @@
     - role: ./roles/rtx
       tags:
         - rtx
-    - role: ./roles/wsl
-      tags:
-        - wsl
