@@ -1,0 +1,35 @@
+---
+- name: apt | Add git PPA
+  apt_repository:
+    repo: ppa:git-core/ppa
+
+- name: apt | apt update
+  apt:
+    update_cache: yes
+
+- name: apt | Install packages
+  apt:
+    state: present
+    name:
+      - autoconf
+      - bc
+      - build-essential
+      - bzip2
+      - curl
+      - fonts-powerline
+      - jq
+      - libbz2-dev
+      - libffi-dev
+      - liblzma-dev
+      - libncursesw5-dev
+      - libreadline-dev
+      - libssl-dev
+      - libsqlite3-dev
+      - libxml2-dev
+      - libxmlsec1-dev
+      - nkf
+      - openssh-server
+      - tk-dev
+      - xz-utils
+      - zip
+      - zlib1g-dev

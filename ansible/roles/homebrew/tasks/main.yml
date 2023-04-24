@@ -1,0 +1,26 @@
+---
+- name: homebrew | Install home brew
+  become_user: "{{ ansible_exec_user }}"
+  shell: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+  args:
+    creates: /home/linuxbrew/.linuxbrew/bin/brew
+
+- name: homebrew | Install packages by homebrew
+  become_user: "{{ ansible_exec_user }}"
+  homebrew:
+    state: present
+    name:
+      - docker-completion
+      - fzf
+      - git
+      - git-lfs
+      - glab
+      - lazygit
+      - navi
+      - neovim
+      - pipenv
+      - rtx
+      - tmux
+      - zsh
+  environment:
+    PATH: "/home/linuxbrew/.linuxbrew/bin:{{ ansible_env.PATH }}"

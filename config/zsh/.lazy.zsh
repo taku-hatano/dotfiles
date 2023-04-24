@@ -1,0 +1,126 @@
+### zsh-replace-multiple-dots ###
+__replace_multiple_dots_atload() {
+    replace_multiple_dots_exclude_go() {
+        if [[ "$LBUFFER" =~ '^go ' ]]; then
+            zle self-insert
+        else
+            zle .replace_multiple_dots
+        fi
+    }
+
+    zle -N .replace_multiple_dots replace_multiple_dots
+    zle -N replace_multiple_dots replace_multiple_dots_exclude_go
+}
+
+zinit wait lucid light-mode for \
+    atload'__replace_multiple_dots_atload' \
+    @'momo-lab/zsh-replace-multiple-dots'
+
+### zsh-history-substring-search ###
+__zsh_history_substring_search_atload() {
+    bindkey "${terminfo[kcuu1]}" history-substring-search-up   # arrow-up
+    bindkey "${terminfo[kcud1]}" history-substring-search-down # arrow-down
+    bindkey "^[[A" history-substring-search-up   # arrow-up
+    bindkey "^[[B" history-substring-search-down # arrow-down
+}
+zinit wait lucid light-mode for \
+    atload'__zsh_history_substring_search_atload' \
+	@'zsh-users/zsh-history-substring-search'
+
+### zsh-autopair ###
+zinit wait'1' lucid light-mode for \
+    @'hlissner/zsh-autopair'
+
+### zsh plugins ###
+zinit wait lucid blockf light-mode for \
+	atload'async_init' @'mafredri/zsh-async' \
+	@'zsh-users/zsh-completions' \
+	@'zsh-users/zsh-autosuggestions' \
+	@'zdharma-continuum/fast-syntax-highlighting'
+
+### yq ###
+zinit wait lucid light-mode as'program' from'gh-r' for \
+    mv'yq* -> yq' \
+    atclone'./yq shell-completion zsh >_yq' atpull'%atclone' \
+    @'mikefarah/yq'
+
+### fd ###
+zinit wait lucid light-mode as'program' from'gh-r' for \
+	mv'fd* -> fd' \
+	pick'fd/fd' \
+	@'sharkdp/fd'
+
+### bat ###
+zinit wait lucid light-mode as'program' from'gh-r' for \
+	mv'bat* -> bat' \
+	pick'bat*/bat' \
+	@'sharkdp/bat'
+
+### delta ###
+zinit wait lucid light-mode as'program' from'gh-r' for \
+	pick'delta*/delta' \
+	@'dandavison/delta'
+
+### ripgrep ###
+zinit wait lucid light-mode as'program' from'gh-r' for \
+	pick'ripgrep*/rg' \
+	@'BurntSushi/ripgrep'
+
+### exa ###
+zinit wait lucid light-mode as'program' from'gh-r' for \
+	pick'bin/exa' \
+	atclone'cp -f completions/exa.zsh _exa' atpull'%atclone' \
+	@'ogham/exa'
+
+### hgrep ###
+zinit wait lucid light-mode as'program' from'gh-r' for \
+    pick'hgrep*/hgrep' \
+    @'rhysd/hgrep'
+
+### navi ###
+__navi_search() {
+    LBUFFER="$(navi --print --query="$LBUFFER")"
+    zle reset-prompt
+}
+__navi_atload() {
+    zle -N __navi_search
+    bindkey '^N' __navi_search
+}
+zinit wait lucid light-mode as'program' from'gh-r' for \
+    atload'__navi_atload' \
+    @'denisidoro/navi'
+
+### zeno.zsh ###
+__zeno_atload() {
+    bindkey ' ' zeno-auto-snippet
+    bindkey '^M' zeno-auto-snippet-and-accept-line
+    bindkey '^P' zeno-completion
+    bindkey "^R" zeno-history-selection # C-r
+}
+# NOTE denoがないとインストールできない
+if (( ${+commands[deno]} )); then
+	zinit wait lucid light-mode for \
+        atload'__zeno_atload' \
+		@'yuki-yano/zeno.zsh'
+fi
+
+### forgit ###
+zinit wait lucid light-mode as'program' for \
+    pick'bin/git-forgit' \
+    @'wfxr/forgit'
+
+### tealdeer ###
+__tealdeer_atclone() {
+    curl -sSL 'https://raw.githubusercontent.com/dbrgn/tealdeer/main/completion/zsh_tealdeer' -o _tealdeer
+}
+zinit wait lucid light-mode as'program' from'gh-r' for \
+    mv'tealdeer* -> tldr' \
+    atclone'__tealdeer_atclone' atpull'%atclone' \
+    @'dbrgn/tealdeer'
+
+### autoloads ###
+autoload -Uz compinit
+autoload -Uz cdr
+autoload -Uz _zinit
+zpcompinit
+compinit

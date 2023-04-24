@@ -1,0 +1,30 @@
+---
+- name: links | make config home directory
+  become_user: "{{ ansible_exec_user }}"
+  file:
+    state: directory
+    mode: "0755"
+    path: "{{ xdg_config_home }}"
+
+- name: links | make symlinks
+  become_user: "{{ ansible_exec_user }}"
+  file:
+    state: link
+    src: "{{ item }}"
+    dest: "{{ xdg_config_home }}{{ item | replace(config_directory_path, '') }}"
+    force: yes
+  with_lines:
+    - "find {{ config_directory_path }} -mindepth 1 -maxdepth 1 -type d"
+
+- name: links | create symlink
+  become_user: "{{ ansible_exec_user }}"
+  file:
+    state: link
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    force: "{{ item.force | default('no') }}"
+  with_items:
+    - src: "{{ xdg_config_home }}/rtx/.tool-versions"
+      dest: "{{ ansible_exec_user_home }}/.tool-versions"
+    - src: "{{ xdg_config_home }}/tmux/tmux.conf"
+      dest: "{{ ansible_exec_user_home }}/.tmux.conf"

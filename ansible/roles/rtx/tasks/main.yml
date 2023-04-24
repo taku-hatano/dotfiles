@@ -1,0 +1,20 @@
+---
+- name: rtx | Install tools
+  become_user: "{{ ansible_exec_user }}"
+  shell: "rtx install {{ item.tool }}@{{ item.version }}"
+  with_items:
+    - tool: nodejs
+      version: 18.16.0
+    - tool: pnpm
+      version: 8.3.0
+    - tool: python
+      version: 3.11.3
+    - tool: rust
+      version: 1.68.2
+    - tool: deno
+      version: 1.32.4
+    - tool: awscli
+      version: 2.11.13
+
+  environment:
+    PATH: "/home/linuxbrew/.linuxbrew/bin:{{ ansible_env.PATH }}"

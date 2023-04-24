@@ -1,0 +1,12 @@
+" =================================
+" set options
+" =================================
+set termguicolors
+set number
+set cursorline
+set hlsearch
+set mouse=a
+set updatetime=250
+set ignorecase
+set smartcase
+set clipboard+=unnamedplus
