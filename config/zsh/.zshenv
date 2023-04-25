@@ -51,7 +51,7 @@ export BREW_HOME="/home/linuxbrew/.linuxbrew"
 export GLAB_REPO_BASE="/data/repos"
 
 ### FZF ###
-export FZF_DEFAULT_OPTS='--reverse --border --ansi --bind="ctrl-d:print-query,ctrl-p:replace-query"'
+export FZF_DEFAULT_OPTS='--cycle --reverse --border --ansi --bind="ctrl-d:print-query,ctrl-p:replace-query"'
 export FZF_DEFAULT_COMMAND='fd --hidden --color=always'
 # export FZF_TMUX=1
 export FZF_TMUX_OPTS="-p 80%"
@@ -106,7 +106,7 @@ export PSQL_HISTORY="$XDG_STATE_HOME/psql_history"
 
 ### AWS CLI ###
 export AWS_CONFIG_FILE="$XDG_CONFIG_HOME/aws/config"
-export AWS_SHARED_CREDENTIALS_FILE="$XDG_DATA_HOME/aws/credentials"
+export AWS_SHARED_CREDENTIALS_FILE="$XDG_CONFIG_HOME/aws/credentials"
 
 ### auto suggestions ###
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=244"
