@@ -42,6 +42,7 @@ setopt SHARE_HISTORY
 # setopt NO_SHARE_HISTORY
 setopt MAGIC_EQUAL_SUBST
 setopt PRINT_EIGHT_BIT
+setopt nonomatch
 
 zshaddhistory() {
     emulate -L zsh
@@ -80,6 +81,9 @@ zinit light-mode from'gh-r' as'program' for \
 source "$ZDOTDIR/conf.d/alias.zsh"
 source "$ZDOTDIR/conf.d/bindKeys.zsh"
 source "$ZDOTDIR/conf.d/command.zsh"
+if [[ -f "$ZDOTDIR/conf.d/local.zsh" ]]; then
+    source "$ZDOTDIR/conf.d/local.zsh"
+fi
 
 ### plugins ###
 zinit wait lucid null for \

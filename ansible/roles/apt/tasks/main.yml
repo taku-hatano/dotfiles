@@ -1,5 +1,6 @@
 ---
 - name: apt | apt update
+  ignore_errors: yes
   apt:
     update_cache: yes
 
@@ -15,6 +16,7 @@
       - fonts-powerline
       - jq
       - libbz2-dev
+      - libcurl4-openssl-dev
       - libffi-dev
       - liblzma-dev
       - libncursesw5-dev
@@ -26,6 +28,19 @@
       - nkf
       - openssh-server
       - tk-dev
+      - uuid-dev
+      - xdg-utils
       - xz-utils
       - zip
       - zlib1g-dev
+
+- name: apt | download wsl-open
+  get_url:
+    url: https://raw.githubusercontent.com/4U6U57/wsl-open/master/wsl-open.sh
+    dest: /usr/local/bin/wsl-open
+
+- name: apt | create symlinks for wsl-open
+  file:
+    src: /usr/local/bin/wsl-open
+    dest: /usr/local/bin/xdg-open
+    state: link

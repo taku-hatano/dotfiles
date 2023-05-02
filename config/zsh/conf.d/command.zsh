@@ -47,7 +47,7 @@ glab-root() {
 }
 
 glab-list() {
-	fd -d 4 -gIH '.git' $(glab root) --exec dirname {} | \
+	fd -td -d 4 -gIH '.git' $(glab root) --exec dirname {} | \
 	awk -F "/" '{for(i=4;i<NF;i++){printf("%s%s",$i,OFS="/")}print $NF}' | \
 	sort
 }
