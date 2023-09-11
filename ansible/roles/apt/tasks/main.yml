@@ -38,6 +38,7 @@
   get_url:
     url: https://raw.githubusercontent.com/4U6U57/wsl-open/master/wsl-open.sh
     dest: /usr/local/bin/wsl-open
+    mode: '755'
 
 - name: apt | create symlinks for wsl-open
   file:

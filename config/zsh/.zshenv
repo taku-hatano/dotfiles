@@ -92,6 +92,9 @@ export NPM_DATA_DIR="$XDG_DATA_HOME/npm"
 export NPM_CACHE_DIR="$XDG_CACHE_HOME/npm"
 export NPM_CONFIG_USERCONFIG="$NPM_CONFIG_DIR/npmrc"
 
+### pnpm ###
+export PNPM_HOME="$XDG_DATA_HOME/pnpm"
+
 ### Python ###
 export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/startup.py"
 
@@ -112,3 +115,4 @@ export AWS_SHARED_CREDENTIALS_FILE="$XDG_CONFIG_HOME/aws/credentials"
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=244"
 
 source "$XDG_CONFIG_HOME/zsh/.zshenv.local"
+. "/home/hatano/.local/share/cargo/env"
