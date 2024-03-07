@@ -194,6 +194,7 @@ completions:
   - name: npm scripts completions
     patterns:
       - ^\s*(npm)\s+(run)\s+$
+      - ^\s*(pnpm)\s+(run)\s+$
     sourceCommand: |
       "$ZENO_HOME/scripts/npm-scripts.zsh"
     options: *format-options

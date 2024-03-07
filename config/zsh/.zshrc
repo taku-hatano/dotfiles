@@ -79,14 +79,14 @@ zinit light-mode from'gh-r' as'program' for \
     atpull"%atclone" src"init.zsh" \
     @'starship/starship'
 
-source "$ZDOTDIR/conf.d/alias.zsh"
-source "$ZDOTDIR/conf.d/bindKeys.zsh"
-source "$ZDOTDIR/conf.d/command.zsh"
-if [[ -f "$ZDOTDIR/conf.d/local.zsh" ]]; then
-    source "$ZDOTDIR/conf.d/local.zsh"
-fi
-
 ### plugins ###
 zinit wait lucid null for \
     atinit'source "$ZDOTDIR/.lazy.zsh"' \
     @'zdharma-continuum/null'
+
+if [[ -f "$ZDOTDIR/conf.d/local.zsh" ]]; then
+    source "$ZDOTDIR/conf.d/local.zsh"
+fi
+source "$ZDOTDIR/conf.d/alias.zsh"
+source "$ZDOTDIR/conf.d/bindKeys.zsh"
+source "$ZDOTDIR/conf.d/command.zsh"
