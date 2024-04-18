@@ -26,7 +26,7 @@ fpath=(
 )
 
 eval "$(brew shellenv)"
-eval "$(rtx activate zsh)"
+eval "$(~/.local/bin/mise activate zsh)"
 
 setopt AUTO_CD
 setopt AUTO_PUSHD

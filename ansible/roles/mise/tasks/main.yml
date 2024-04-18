@@ -1,0 +1,3 @@
+---
+- name: mise | Install mise
+  shell: curl https://mise.run | sh

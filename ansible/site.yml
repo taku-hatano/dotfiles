@@ -27,6 +27,9 @@
     - role: ./roles/zsh
       tags:
         - zsh
-    - role: ./roles/rtx
+    - role: ./roles/mise
       tags:
-        - rtx
+        - mise
+    - role: ./roles/awscli
+      tags:
+        - awscli
