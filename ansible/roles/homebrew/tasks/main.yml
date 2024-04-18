@@ -10,17 +10,23 @@
   homebrew:
     state: present
     name:
+      - bat
       - docker-completion
+      - fd
       - fzf
       - git
       - git-lfs
+      - git-delta
       - glab
       - hyperfine
       - lazygit
+      - lazydocker
+      - ripgrep
       - navi
       - neovim
       - pipenv
       - tmux
+      - yq
       - zsh
   environment:
     PATH: "/home/linuxbrew/.linuxbrew/bin:{{ ansible_env.PATH }}"

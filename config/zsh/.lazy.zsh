@@ -38,40 +38,6 @@ zinit wait lucid blockf light-mode for \
 	@'zsh-users/zsh-autosuggestions' \
 	@'zdharma-continuum/fast-syntax-highlighting'
 
-### yq ###
-zinit wait lucid light-mode as'program' from'gh-r' for \
-    mv'yq* -> yq' \
-    atclone'./yq shell-completion zsh >_yq' atpull'%atclone' \
-    @'mikefarah/yq'
-
-### fd ###
-zinit wait lucid light-mode as'program' from'gh-r' for \
-	mv'fd* -> fd' \
-	pick'fd/fd' \
-	@'sharkdp/fd'
-
-### bat ###
-zinit wait lucid light-mode as'program' from'gh-r' for \
-	mv'bat* -> bat' \
-	pick'bat*/bat' \
-	@'sharkdp/bat'
-
-### delta ###
-zinit wait lucid light-mode as'program' from'gh-r' for \
-	pick'delta*/delta' \
-	@'dandavison/delta'
-
-### ripgrep ###
-zinit wait lucid light-mode as'program' from'gh-r' for \
-	pick'ripgrep*/rg' \
-	@'BurntSushi/ripgrep'
-
-### exa ###
-zinit wait lucid light-mode as'program' from'gh-r' for \
-	pick'bin/exa' \
-	atclone'cp -f completions/exa.zsh _exa' atpull'%atclone' \
-	@'ogham/exa'
-
 ### hgrep ###
 zinit wait lucid light-mode as'program' from'gh-r' for \
     pick'hgrep*/hgrep' \

@@ -13,6 +13,7 @@
       - build-essential
       - bzip2
       - curl
+      - exa
       - fonts-powerline
       - jq
       - libbz2-dev
