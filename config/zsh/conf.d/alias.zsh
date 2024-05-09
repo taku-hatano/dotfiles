@@ -3,6 +3,7 @@ alias rz='source ${ZDOTDIR}/.zshrc'
 
 alias la='ls -a'
 alias ll='ls -al'
+alias exa='eza'
 alias ls='exa --group-directories-first'
 alias la='exa --group-directories-first -a'
 alias ll='exa --group-directories-first -al --header --color-scale --git --icons --time-style=long-iso'

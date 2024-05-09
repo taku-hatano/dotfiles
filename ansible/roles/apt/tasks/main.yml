@@ -13,7 +13,6 @@
       - build-essential
       - bzip2
       - curl
-      - exa
       - fonts-powerline
       - jq
       - libbz2-dev
@@ -31,6 +30,7 @@
       - sshpass
       - tk-dev
       - uuid-dev
+      - wl-clipboard
       - xdg-utils
       - xz-utils
       - zip

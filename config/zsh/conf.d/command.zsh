@@ -148,12 +148,18 @@ docker-rmi() {
 
 ### Editor ###
 e() {
-	if [ $# -eq 0 ]; then
-		local selected="$(fd --hidden --color=always --type=f  | fzf --exit-0 --multi --preview="fzf-preview-file {}" --preview-window="right:60%")"
-		[ -n "$selected" ] && "$EDITOR" -- ${(f)selected}
-	else
-		command "$EDITOR" "$@"
-	fi
+	tmux split-window -h
+	tmux split-window -v
+	tmux resize-pane -D 20
+	tmux resize-pane -L 60
+	tmux select-pane -t 1
+	tmux split-window -v
+	# clear
+	tmux setw synchronize-panes on
+	tmux send-keys "clear" C-m
+	tmux setw synchronize-panes off
+	tmux select-pane -t 3
+	tmux send-keys "nvim $@" C-m
 }
 
 ### shrink path ###

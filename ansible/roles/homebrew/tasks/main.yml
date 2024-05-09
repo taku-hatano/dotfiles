@@ -12,6 +12,7 @@
     name:
       - bat
       - docker-completion
+      - eza
       - fd
       - fzf
       - git

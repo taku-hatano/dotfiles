@@ -82,10 +82,16 @@ vim.opt.termguicolors = true
 vim.opt.pumblend = 10
 vim.opt.winblend = 10
 
+-- swapfileの設定
+vim.opt.swapfile = false
+
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
 vim.opt.incsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+
+-- jjでノーマルモードに戻る
+vim.keymap.set('i', 'jj', '<Esc>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
@@ -100,6 +106,12 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+-- Keybinds to move in insert mode
+vim.keymap.set('i', '<C-h>', '<Left>', { desc = 'Move cursor left' })
+vim.keymap.set('i', '<C-l>', '<Right>', { desc = 'Move cursor right' })
+vim.keymap.set('i', '<C-j>', '<Down>', { desc = 'Move cursor down' })
+vim.keymap.set('i', '<C-k>', '<Up>', { desc = 'Move cursor up' })
+
 -- Highlight when yanking (copying) text
 --  Try it with `yap` in normal mode
 --  See `:help vim.highlight.on_yank()`
@@ -112,12 +124,31 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 })
 
 -- WSL clipboard
-vim.cmd [[
-	augroup Yank
-	autocmd!
-	autocmd TextYankPost * :call system('/mnt/c/windows/system32/clip.exe ',@")
-	augroup END
-]]
+if vim.fn.has 'wsl' == 1 then
+  if vim.fn.executable 'wl-copy' == 0 then
+    print "wl-clipboard not found, clipboard integration won't work"
+  else
+    vim.g.clipboard = {
+      name = 'wl-clipboard (wsl)',
+      copy = {
+        ['+'] = 'wl-copy --foreground --type text/plain',
+        ['*'] = 'wl-copy --foreground --primary --type text/plain',
+      },
+      paste = {
+        ['+'] = function()
+          return vim.fn.systemlist('wl-paste --no-newline|sed -e "s/\r$//"', { '' }, 1) -- '1' keeps empty lines
+        end,
+        ['*'] = function()
+          return vim.fn.systemlist('wl-paste --primary --no-newline|sed -e "s/\r$//"', { '' }, 1)
+        end,
+      },
+      cache_enabled = true,
+    }
+  end
+end
+
+-- vim loader
+vim.loader.enable()
 
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
@@ -136,8 +167,95 @@ require('lazy').setup {
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
 
+  -- alpha.nvim
+  {
+    'goolord/alpha-nvim',
+    dependencies = {
+      'kyazdani42/nvim-web-devicons',
+    },
+    config = function()
+      local dashboard = require 'alpha.themes.dashboard'
+
+      -- header
+      dashboard.section.header.val = {
+        '                                                     ',
+        '  ███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗ ',
+        '  ████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║ ',
+        '  ██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║ ',
+        '  ██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║ ',
+        '  ██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║ ',
+        '  ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝ ',
+        '                                                     ',
+      }
+
+      dashboard.section.header.val ={
+        '⠀⠀⠀⠀⠀⠀⠀⣀⣤⠶⠖⠒⠲⣤⡀⠀⠀⠀⠀⠀⠀⠀⣠⠴⠖⠒⠶⢤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
+'⠀⠀⠀⣠⡤⠖⠋⠉⠀⠀⢀⡀⠀⠀⢻⣄⠀⠀⠀⠀⢀⣼⠁⠀⢀⡀⠀⠀⠀⠉⠙⠒⢦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠤⠤⠤⢤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
+'⠀⢠⣾⠃⠀⢀⣠⣤⣶⣿⣿⣿⣧⠀⠀⠛⠋⠉⠉⠛⡾⠇⠀⢠⣿⣿⣿⣷⣶⣤⣄⡀⠀⢻⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡾⠏⠀⣀⣀⡀⠈⠹⡆⠀⠀⠀⠀⠀⠀⠀⠀',
+'⠀⣼⡟⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣆⠀⠀⠀⠀⠀⠀⠀⠀⢀⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⢠⡧⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣀⣀⣀⣀⠀⠀⣾⡃⢀⣴⣿⣿⣿⡄⠀⣷⠀⠀⠀⠀⠀⠀⠀⠀',
+'⢠⡏⢧⠀⠀⠻⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣿⣿⣿⣿⡿⠀⠀⣼⣃⣀⣠⣀⣀⠀⠀⠀⣶⠏⠁⠀⠀⠈⠉⠉⠉⠻⠷⠀⠘⣿⣿⣿⠉⠁⢠⣿⠀⠀⠀⠀⠀⠀⠀⠀',
+'⠀⢻⡜⣧⠀⠀⠻⣿⣿⣿⣿⣿⣿⣿⣿⡄⠀⠀⠀⠀⠀⢰⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠉⠉⠀⠀⠈⠈⢿⣄⣸⡉⠀⢠⣶⣶⣶⣦⣤⣄⠀⠀⠀⡀⣸⣿⣿⣧⠀⠈⠙⠛⠓⠶⠦⢤⣀⠀⠀',
+'⠀⠀⢷⡘⣆⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⡄⠀⠀⠀⢠⣿⣿⣿⣿⣿⣿⣿⣿⠏⠀⣀⣠⣤⣤⣶⣶⡆⠀⠀⣿⣿⠀⠀⢸⣿⣿⣿⣿⣿⣿⣧⠀⠀⢿⣿⣿⡿⠃⠀⣀⣄⣀⣀⠀⠀⠀⠈⢷⡄',
+'⠀⠀⠈⢷⡘⣦⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⡀⠀⢀⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⠀⣿⣿⣿⣿⣿⣿⣷⠀⠀⢺⡟⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣆⠀⠀⠉⠉⠁⣠⣾⣿⣿⣿⣿⣿⣿⠆⠀⠀⣷',
+'⠀⠀⠀⠘⢧⣘⣧⠀⠀⢿⣿⣿⣿⣿⣿⣿⣿⣧⠀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⡄⠀⠈⠁⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄⠀⠀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⣸⠇',
+'⠀⠀⠀⠀⠈⣷⠺⣇⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠈⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⠀⡿⠀',
+'⠀⠀⠀⠀⠀⠈⢷⡸⣆⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠏⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣷⠀⠀⠀⠀⣸⣿⣿⣿⣿⣿⠙⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⢸⠇⠀',
+'⠀⠀⠀⠀⠀⠀⠘⣷⠹⣆⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠏⠀⠀⠀⠀⠀⠀⢿⣿⣿⣿⣿⣿⣿⡀⠀⠀⠀⣿⣿⣿⣿⣿⣿⠀⢻⣿⣿⣿⣿⣿⣿⡿⢡⣿⣿⣿⣿⣿⡟⠀⢀⡿⠀⠀',
+'⠀⠀⠀⠀⠀⠀⠀⠘⣇⠹⣆⠀⠈⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠋⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⡇⠀⠀⢠⣿⣿⣿⣿⣿⣿⡆⠈⣿⣿⣿⣿⣿⠏⠀⣾⣿⣿⣿⣿⣿⠇⠀⢰⠇⠀⠀',
+'⠀⠀⠀⠀⠀⠀⠀⠀⠘⣧⠽⣆⠀⠈⢿⣿⣿⣿⣿⣿⣿⣿⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣿⣿⣿⣿⣿⣷⠀⠀⢸⣿⣿⣿⣿⣿⡟⠃⠀⠈⠉⠙⠛⠁⠀⣸⣿⣿⣿⣿⣿⡟⠀⠀⣾⠀⠀⠀',
+'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣏⢹⡆⠀⠈⠛⠛⠛⠛⠛⠛⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⡀⠀⠘⠿⣿⢿⡿⠿⠇⠀⠀⠀⠀⠀⠀⠀⢠⣿⣿⣿⣿⣿⣿⠃⠀⢀⡟⠀⠀⠀',
+'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣧⡇⠀⣴⡄⣀⢀⡀⣴⣶⣦⠀⠀⠀⠀⠀⢀⣶⣶⣤⡀⠀⢸⣿⣿⣿⣿⣿⣿⡇⠀⣴⣶⣿⣿⣷⢀⣀⣀⠀⠀⠀⠀⠀⠀⠘⠿⢿⣿⣿⣿⡟⠀⠀⣸⠃⠀⠀⠀',
+'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⡇⠀⠿⠏⢿⣿⡏⠙⢻⡇⠀⠀⠀⠀⣰⣾⣿⣿⣿⣧⣤⣬⠛⠛⠛⠋⠉⠉⠀⠀⣩⣿⣿⣿⠏⢸⣿⣿⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠁⠀⢠⡟⠀⠀⠀⠀',
+'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠿⠦⣄⣀⠀⠀⢀⣀⣀⣀⣀⡀⠀⠀⠛⠛⠻⣿⣿⣏⠉⠋⠀⣤⣦⠀⠀⣶⣾⡄⣿⣿⣿⣿⣆⣈⣿⡉⠁⠀⠀⠀⢠⣿⠇⠀⢀⣤⠤⠤⠤⢴⣿⠁⠀⠀⠀⠀',
+'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢦⣄⠀⠈⠉⠩⢉⠡⡭⠟⡁⢿⣓⣶⠀⠀⣠⣿⣿⡏⠀⠀⠀⢻⣿⣶⡄⠸⠟⠃⠀⠉⠙⠿⣿⣿⠿⠛⠀⣴⡆⢀⣿⡟⠀⣰⢏⣿⣀⣀⣤⠾⠃⠀⠀⠀⠀⠀',
+'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠓⠒⠚⠋⠛⠒⢛⡿⠋⠁⠀⠀⠈⠻⡿⠋⠀⠀⠀⠀⣀⣻⣿⣃⣀⣀⣀⣤⣀⠀⠀⠀⠀⠀⠀⣰⣿⠁⣾⡿⠀⢠⡿⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
+'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⡇⠀⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣄⠀⠀⠀⢰⣿⠇⠀⣀⣀⣠⣾⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
+'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⠀⠀⠀⠈⠁⠀⣼⠫⢉⣰⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
+'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠸⠿⠿⠿⠿⠿⠛⠛⠛⠛⠛⠛⠛⠛⠛⠋⠉⠉⠉⠉⠀⣠⠞⠉⠉⠛⠚⢛⡿⠛⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
+'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⠻⢤⣄⣀⣀⣀⣀⣤⠤⠀⠀⠤⠤⠤⠶⠶⠶⠂⠐⠒⠒⠚⠋⣵⠟⠛⠓⠶⠒⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
+'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣦⣀⠀⢀⣀⠀⣀⣀⣀⣀⣀⣀⣤⣤⣤⣠⣤⣤⠤⠴⠶⠶⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
+'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠉⠉⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
+      }
+
+      -- Set menu
+      dashboard.section.buttons.val = {
+        dashboard.button('t', '  Neotree', ':Neotree toggle<Return>'),
+        dashboard.button('n', '  New file', ':ene <BAR> startinsert <CR>'),
+        dashboard.button('r', '  Recent file', ':Telescope oldfiles <CR>'),
+        dashboard.button('f', '󰥨  Find file', ':Telescope find_files <CR>'),
+        dashboard.button('g', '󰱼  Find text', ':Telescope live_grep <CR>'),
+        dashboard.button('s', '  Settings', ':e $MYVIMRC | :cd %:p:h | split . | wincmd k | pwd<CR>'),
+        dashboard.button('q', '  Quit', ':qa<CR>'),
+      }
+
+      -- Set footer
+      local function footer()
+        local total_plugins = #require('lazy').plugins()
+        local datetime = os.date ' %Y-%m-%d   %H:%M:%S'
+        local version = vim.version()
+        local version_info = '   v' .. version.major .. '.' .. version.minor .. '.' .. version.patch
+        return datetime .. '  ⚡' .. total_plugins .. ' plugins' .. version_info
+      end
+      dashboard.section.footer.val = footer()
+
+      -- Send config to alpha
+      require('alpha').setup(dashboard.opts)
+
+      -- Disable folding on alpha buffer
+      vim.cmd [[autocmd FileType alpha setlocal nofoldenable]]
+    end,
+  },
+
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
+
+  -- colorizer
+  {
+    'norcalli/nvim-colorizer.lua',
+    config = function()
+      require('colorizer').setup()
+    end,
+  },
 
   -- Adds git related signs to the gutter, as well as utilities for managing changes
   {
@@ -169,6 +287,7 @@ require('lazy').setup {
         ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
         ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
         ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
+        ['<leader>b'] = { name = '[B]uffer', _ = 'which_key_ignore' },
       }
       -- visual mode
       require('which-key').register({
@@ -342,6 +461,15 @@ require('lazy').setup {
               vim.lsp.inlay_hint.enable(0, not vim.lsp.inlay_hint.is_enabled())
             end, '[T]oggle Inlay [H]ints')
           end
+
+          vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
+            update_in_insert = true,
+            virtual_text = {
+              spacing = 5,
+              severity_limit = 'Warning',
+            },
+            underline = true,
+          })
         end,
       })
 
@@ -407,6 +535,7 @@ require('lazy').setup {
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'biome', -- Used to format JavaScript and TypeScript code
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -540,25 +669,6 @@ require('lazy').setup {
           --  Generally you don't need this, because nvim-cmp will display
           --  completions whenever it has completion options available.
           ['<C-Space>'] = cmp.mapping.complete {},
-
-          -- Think of <c-l> as moving to the right of your snippet expansion.
-          --  So if you have a snippet that's like:
-          --  function $name($args)
-          --    $body
-          --  end
-          --
-          -- <c-l> will move you to the right of each of the expansion locations.
-          -- <c-h> is similar, except moving you backwards.
-          ['<C-l>'] = cmp.mapping(function()
-            if luasnip.expand_or_locally_jumpable() then
-              luasnip.expand_or_jump()
-            end
-          end, { 'i', 's' }),
-          ['<C-h>'] = cmp.mapping(function()
-            if luasnip.locally_jumpable(-1) then
-              luasnip.jump(-1)
-            end
-          end, { 'i', 's' }),
 
           -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
           --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -696,6 +806,9 @@ require('lazy').setup {
       { '\\', ':Neotree reveal<CR>', { desc = 'NeoTree reveal' } },
     },
     opts = {
+      window = {
+        position = 'left',
+      },
       filesystem = {
         filtered_items = {
           visible = false,
@@ -767,13 +880,6 @@ require('lazy').setup {
       require('scrollview').setup()
     end,
   },
-  {
-    'karb94/neoscroll.nvim',
-    config = function()
-      require('neoscroll').setup {}
-    end,
-  },
-
   -- notice
   {
     'folke/noice.nvim',
@@ -792,7 +898,7 @@ require('lazy').setup {
         presets = {
           bottom_search = true, -- use a classic bottom cmdline for search
           command_palette = true, -- position the cmdline and popupmenu together
-          long_message_to_split = true, -- long messages will be sent to a split
+          long_message_to_split = true, -- long messages will be nt to a split
           inc_rename = false, -- enables an input dialog for inc-rename.nvim
           lsp_doc_border = false, -- add a border to hover docs and signature help
         },
@@ -826,9 +932,23 @@ require('lazy').setup {
       vim.keymap.set('n', 'F', '<cmd>HopLine<CR>', { desc = 'Hop to line' })
     end,
   },
+
+  -- Code Lens
+  {
+    'Wansmer/symbol-usage.nvim',
+    event = 'BufReadPre', -- need run before LspAttach if you use nvim 0.9. On 0.10 use 'LspAttach'
+    config = function()
+      require('symbol-usage').setup {
+        vt_position = 'end_of_line',
+      }
+    end,
+  },
 }
 
 require('bufferline').setup()
-vim.keymap.set('n', ']b', '<CMD>BufferLineCycleNext<CR>', { desc = 'Go to next [B]uffer' })
-vim.keymap.set('n', '[b', '<CMD>BufferLineCyclePrev<CR>', { desc = 'Go to prev [B]uffer' })
+vim.keymap.set('n', '<leader>bch', '<CMD>BufferLineCloseLeft<CR>', { desc = '[B]uffer [C]lose left' })
+vim.keymap.set('n', '<leader>bcl', '<CMD>BufferLineCloseRight<CR>', { desc = '[B]uffer [C]lose right' })
+vim.keymap.set('n', '<leader>bco', '<CMD>BufferLineCloseOthers<CR>', { desc = '[B]uffer [C]lose [O]thers' })
+vim.keymap.set('n', '<S-l>', '<CMD>BufferLineCycleNext<CR>', { desc = 'Go to next Buffer' })
+vim.keymap.set('n', '<S-h>', '<CMD>BufferLineCyclePrev<CR>', { desc = 'Go to prev Buffer' })
 require('lualine').setup {}
