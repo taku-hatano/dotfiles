@@ -27,6 +27,7 @@ fpath=(
 
 eval "$(brew shellenv)"
 eval "$(~/.local/bin/mise activate zsh)"
+source "$HOME/.rye/env"
 
 setopt AUTO_CD
 setopt AUTO_PUSHD
