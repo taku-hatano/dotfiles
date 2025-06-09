@@ -207,3 +207,25 @@ completions:
       "$ZENO_HOME/scripts/aws-profile.zsh"
     options: *format-options
     callback: awk '{ print $3 }'
+  # gh
+  - name: gh pr completions
+    patterns:
+      - ^\s*(gh)\s+(pr)(.*\s+)*$
+    sourceCommand: |
+      "$ZENO_HOME/scripts/github-pr-list.zsh"
+    options: *format-options
+    callback: awk '{ print $3 }'
+  - name: gh issue completions
+    patterns:
+      - ^\s*(gh)\s+(issue)(.*\s+)*$
+    sourceCommand: |
+      "$ZENO_HOME/scripts/github-issue-list.zsh"
+    options: *format-options
+    callback: awk '{ print $3 }'
+  - name: gh run completions
+    patterns:
+      - ^\s*(gh)\s+(run)(.*\s+)*$
+    sourceCommand: |
+      "$ZENO_HOME/scripts/github-run-list.zsh"
+    options: *format-options
+    callback: awk '{ print $3 }'

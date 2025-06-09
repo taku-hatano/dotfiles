@@ -107,3 +107,5 @@ if type compdef &>/dev/null; then
   }
   compdef _pnpm_completion pnpm
 fi
+
+eval "$(gh completion -s zsh)"
