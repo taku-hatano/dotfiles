@@ -2,6 +2,7 @@
 conf.d/local.zsh
 
 !.gitignore
+!.zprofile
 !.zshrc
 !.zshenv
 !.lazy.zsh
