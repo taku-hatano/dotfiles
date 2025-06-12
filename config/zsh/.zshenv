@@ -80,9 +80,6 @@ export RIPGREP_CONFIG_PATH="$XDG_CONFIG_HOME/ripgrep/config"
 ### navi ###
 export NAVI_CONFIG="$XDG_CONFIG_HOME/navi/config.yaml"
 
-### tealdeer ###
-export TEALDEER_CONFIG_DIR="$XDG_CONFIG_HOME/tealdeer"
-
 ### Node.js ###
 export NODE_REPL_HISTORY="$XDG_STATE_HOME/node_history"
 

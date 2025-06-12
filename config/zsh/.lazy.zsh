@@ -75,15 +75,6 @@ zinit wait lucid light-mode as'program' for \
     pick'bin/git-forgit' \
     @'wfxr/forgit'
 
-### tealdeer ###
-__tealdeer_atclone() {
-    curl -sSL 'https://raw.githubusercontent.com/dbrgn/tealdeer/main/completion/zsh_tealdeer' -o _tealdeer
-}
-zinit wait lucid light-mode as'program' from'gh-r' for \
-    mv'tealdeer* -> tldr' \
-    atclone'__tealdeer_atclone' atpull'%atclone' \
-    @'dbrgn/tealdeer'
-
 ### autoloads ###
 autoload -Uz compinit
 autoload -Uz cdr
