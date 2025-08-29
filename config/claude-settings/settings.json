@@ -1,12 +1,4 @@
 {
-  "permissions": {
-    "allow": [
-      "mcp__jira-mcp__getAccessibleAtlassianResources",
-      "mcp__jira-mcp__getJiraIssue",
-      "mcp__forcia-slack-mcp__forcia_slack_post_message"
-    ],
-    "deny": []
-  },
   "hooks": {
     "Stop": [
       {
@@ -30,5 +22,12 @@
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "npx -y ccusage@latest statusline"
+  },
+  "feedbackSurveyState": {
+    "lastShownTime": 1754309101330
   }
 }
