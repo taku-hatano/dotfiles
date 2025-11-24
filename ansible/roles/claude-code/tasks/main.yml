@@ -1,0 +1,5 @@
+---
+- name: claude code | Install Claude Code
+  shell: curl -fsSL https://claude.ai/install.sh | bash
+  args:
+    creates: "{{ ansible_exec_user_home }}/.local/bin/claude"

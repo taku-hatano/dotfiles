@@ -39,3 +39,6 @@
     - role: ./roles/win32yank
       tags:
         - win32yank
+    - role: ./roles/claude-code
+      tags:
+        - claude-code
