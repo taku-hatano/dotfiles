@@ -7,6 +7,8 @@ bun = "latest"
 pnpm = "latest"
 go = "latest"
 java = "21"
+"npm:@openai/codex" = "latest"
+"npm:@google/gemini-cli" = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["python"]
