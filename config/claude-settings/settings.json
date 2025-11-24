@@ -1,4 +1,5 @@
 {
+  "model": "haiku",
   "hooks": {
     "Stop": [
       {
@@ -25,8 +26,13 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "npx -y ccusage@latest statusline"
+    "command": "~/.claude/statusline.js"
   },
+  "enabledPlugins": {
+    "forcia-claude-plugin@forcia-claude-marketplace": false,
+    "example-skills@anthropic-agent-skills": true
+  },
+  "alwaysThinkingEnabled": true,
   "feedbackSurveyState": {
     "lastShownTime": 1754309101330
   }
