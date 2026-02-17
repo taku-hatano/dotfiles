@@ -16,6 +16,7 @@
       - fd
       - fzf
       - gh
+      - ghq
       - git
       - git-lfs
       - git-delta

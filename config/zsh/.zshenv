@@ -47,9 +47,6 @@ export DENO_INSTALL="$XDG_DATA_HOME/deno"
 ### Homebrew ###
 export BREW_HOME="/home/linuxbrew/.linuxbrew"
 
-### glab ###
-export GLAB_REPO_BASE="/data/repos"
-
 ### FZF ###
 export FZF_DEFAULT_OPTS='--cycle --reverse --border --ansi --bind="ctrl-d:print-query,ctrl-p:replace-query"'
 export FZF_DEFAULT_COMMAND='fd --hidden --color=always'
