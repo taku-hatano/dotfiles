@@ -8,8 +8,10 @@
   apt:
     state: present
     name:
+      - alsa-utils
       - autoconf
       - bc
+      - bubblewrap
       - build-essential
       - bzip2
       - curl
@@ -23,6 +25,7 @@
       - libreadline-dev
       - libssl-dev
       - libsqlite3-dev
+      - libasound2-plugins
       - libxml2-dev
       - libxmlsec1-dev
       - nkf
@@ -33,6 +36,7 @@
       - wl-clipboard
       - xdg-utils
       - xz-utils
+      - socat
       - zip
       - zlib1g-dev
 

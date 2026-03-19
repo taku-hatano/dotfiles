@@ -14,6 +14,7 @@ path=(
     "$VOLTA_HOME/bin"(N-/)
     "$DENO_INSTALL/bin"(N-/)
     "$BREW_HOME/bin"(N-/)
+    "$DEVCONTAINER_CLI_HOME/bin"(N-/)
     "$XDG_CONFIG_HOME/scripts/bin"(N-/)
     "$XDG_DATA_HOME/pnpm"
     "$path[@]"

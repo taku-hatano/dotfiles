@@ -30,6 +30,9 @@
     - role: ./roles/mise
       tags:
         - mise
+    - role: ./roles/devcontainer
+      tags:
+        - devcontainer
     - role: ./roles/rye
       tags:
         - rye

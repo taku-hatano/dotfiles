@@ -1,0 +1,5 @@
+---
+- name: devcontainer | Install devcontainer
+  shell: curl -fsSL https://raw.githubusercontent.com/devcontainers/cli/main/scripts/install.sh | sh -s -- --prefix {{ xdg_data_home }}/devcontainers
+  args:
+    creates: "{{ xdg_data_home }}/devcontainers/bin/devcontainer"

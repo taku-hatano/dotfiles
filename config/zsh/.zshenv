@@ -111,5 +111,8 @@ export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=244"
 ### Claude Code ###
 export CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1
 
+### Devcontainer CLI ###
+export DEVCONTAINER_CLI_HOME="$XDG_DATA_HOME/devcontainers"
+
 source "$XDG_CONFIG_HOME/zsh/.zshenv.local"
 . "/home/hatano/.local/share/cargo/env"
