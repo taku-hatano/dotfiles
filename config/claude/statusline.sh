@@ -1,72 +1,52 @@
 #!/usr/bin/env bash
 # Claude Code statusline script
-# Line 1: Model | Context% | +added/-removed | branch
-# Line 2: 5h rate limit progress bar + reset time (Asia/Tokyo)
-# Line 3: 7d rate limit progress bar + reset date/time (Asia/Tokyo)
+# Line 1: Model | +added/-removed | branch | uncommitted | project
+# Line 2: Session ctx | 5h limit | 7d limit (all SPARK bars)
 
 set -euo pipefail
-
-CACHE_FILE="/tmp/claude-usage-cache.json"
-CACHE_TTL=360
-CREDENTIALS_FILE="$HOME/.claude/.credentials.json"
-USAGE_API="https://api.anthropic.com/api/oauth/usage"
 
 # --- 24-bit color helpers ---
 RESET="\033[0m"
 
-# Palette
+# Palette - general
 C_GREEN="\033[38;2;151;201;195m"   # #97C9C3
 C_YELLOW="\033[38;2;229;192;123m"  # #E5C07B
 C_RED="\033[38;2;224;108;117m"     # #E06C75
 C_GRAY="\033[38;2;74;88;92m"       # #4A585C (separator / muted text)
 
-# Pick color by percentage (integer)
-pct_color() {
-  local pct="$1"
-  if [ "$pct" -ge 80 ] 2>/dev/null; then
-    printf '%s' "$C_RED"
-  elif [ "$pct" -ge 50 ] 2>/dev/null; then
-    printf '%s' "$C_YELLOW"
-  else
-    printf '%s' "$C_GREEN"
-  fi
-}
+# Palette - limit bars (fixed color per category)
+C_CTX="\033[38;2;86;182;194m"      # #56B6C2  cyan/teal - session context
+C_5H="\033[38;2;209;154;102m"      # #D19A66  amber/orange - 5h limit
+C_7D="\033[38;2;198;120;221m"      # #C678DD  purple/lavender - 7d limit
 
-# Gradient color for context window usage (0% green → 40% yellow → 80%+ red)
-# Linear RGB interpolation with 80% as the critical threshold
-ctx_color() {
-  local pct="$1"
-  [ "$pct" -lt 0 ] 2>/dev/null && pct=0
-  local r g b
-  if [ "$pct" -le 40 ]; then
-    # Green(151,201,195) → Yellow(229,192,123)
-    local t=$((pct * 100 / 40))
-    r=$(( 151 + (229 - 151) * t / 100 ))
-    g=$(( 201 + (192 - 201) * t / 100 ))
-    b=$(( 195 + (123 - 195) * t / 100 ))
-  elif [ "$pct" -le 80 ]; then
-    # Yellow(229,192,123) → Red(224,108,117)
-    local t=$(( (pct - 40) * 100 / 40 ))
-    r=$(( 229 + (224 - 229) * t / 100 ))
-    g=$(( 192 + (108 - 192) * t / 100 ))
-    b=$(( 123 + (117 - 123) * t / 100 ))
-  else
-    # 80%+: solid red
-    r=224; g=108; b=117
-  fi
-  printf '\033[38;2;%d;%d;%dm' "$r" "$g" "$b"
-}
-
-# Build a 10-segment progress bar using block characters
+# Build a 10-segment progress bar using spark characters for smooth granularity
+# Each segment represents 10%, with partial fill shown via spark height
+SPARKS=' ▁▂▃▄▅▆▇█'
 progress_bar() {
   local pct="$1"
-  local filled=$(( pct * 10 / 100 ))
-  [ "$filled" -gt 10 ] && filled=10
-  local empty=$(( 10 - filled ))
+  [ "$pct" -gt 100 ] 2>/dev/null && pct=100
+  [ "$pct" -lt 0 ] 2>/dev/null && pct=0
   local bar=""
   local i
-  for (( i=0; i<filled; i++ )); do bar="${bar}▰"; done
-  for (( i=0; i<empty; i++ )); do bar="${bar}▱"; done
+  for (( i=0; i<10; i++ )); do
+    local seg_start=$(( i * 10 ))
+    local seg_end=$(( seg_start + 10 ))
+    if [ "$pct" -ge "$seg_end" ]; then
+      # Fully filled segment
+      bar="${bar}█"
+    elif [ "$pct" -le "$seg_start" ]; then
+      # Empty segment
+      bar="${bar} "
+    else
+      # Partial segment: map remainder (1-9) to spark index (1-8)
+      local remainder=$(( pct - seg_start ))
+      local idx=$(( (remainder * 8 + 5) / 10 ))
+      [ "$idx" -lt 1 ] && idx=1
+      [ "$idx" -gt 8 ] && idx=8
+      local spark="${SPARKS:$idx:1}"
+      bar="${bar}${spark}"
+    fi
+  done
   printf '%s' "$bar"
 }
 
@@ -134,20 +114,10 @@ fi
 # --- Line 1 assembly ---
 SEP="${C_GRAY} │ ${RESET}"
 
-# Model
-line1="${C_GREEN}🤖 ${model}${RESET}"
-
-# Context %
-if [ -n "$used_pct" ]; then
-  pct_int=${used_pct%.*}
-  col=$(ctx_color "$pct_int")
-  line1="${line1}${SEP}${col}📊 ${pct_int}%${RESET}"
-fi
-
-# Diff stat
-if [ -n "$diff_stat" ]; then
-  line1="${line1}${SEP}${C_YELLOW}✏️ ${diff_stat}${RESET}"
-fi
+# Project name + relative path
+dir_display="${project_name}"
+[ -n "$rel_path" ] && dir_display="${project_name}/${rel_path}"
+line1="${C_GREEN}📁 ${dir_display}${RESET}"
 
 # Branch + ahead/behind
 if [ -n "$branch" ]; then
@@ -165,125 +135,79 @@ if [ -n "$branch" ]; then
   line1="${line1}${SEP}${C_GREEN}${branch_part}${RESET}"
 fi
 
+# Diff stat
+if [ -n "$diff_stat" ]; then
+  line1="${line1}${SEP}${C_YELLOW}✏️ ${diff_stat}${RESET}"
+fi
+
 # Uncommitted files
 if [ -n "$uncommitted" ]; then
   line1="${line1}${SEP}${C_YELLOW}● ${uncommitted} changed${RESET}"
 fi
 
-# Project name
-line1="${line1}${SEP}${C_GREEN}📁 ${project_name}${RESET}"
+# Model
+line1="${line1}${SEP}${C_GREEN}🤖 ${model}${RESET}"
 
-# Relative path (if inside subdirectory)
-if [ -n "$rel_path" ]; then
-  line1="${line1}${SEP}${C_GRAY}📂 ${rel_path}${RESET}"
-fi
+# --- Line 2: Session ctx | 5h limit | 7d limit (all SPARK bars) ---
 
-# --- Rate limit cache / fetch ---
-fetch_usage() {
-  # Rate limit display disabled – early return to skip API request
-  return 1
-  if [ ! -f "$CREDENTIALS_FILE" ]; then
-    return 1
-  fi
-  token=$(jq -r '.claudeAiOauth.accessToken // empty' "$CREDENTIALS_FILE" 2>/dev/null)
-  if [ -z "$token" ]; then
-    return 1
-  fi
-  curl -sf -H "Authorization: Bearer $token" "$USAGE_API" 2>/dev/null
-}
-
-usage_json=""
-if [ -f "$CACHE_FILE" ]; then
-  cache_mtime=$(stat -c %Y "$CACHE_FILE" 2>/dev/null || echo 0)
+# Format remaining time until reset as compact string (e.g. "2h13m", "3d5h")
+fmt_remaining() {
+  local ts="$1"
+  [ -z "$ts" ] || [ "$ts" = "null" ] && return
+  local now
   now=$(date +%s)
-  age=$(( now - cache_mtime ))
-  if [ "$age" -lt "$CACHE_TTL" ]; then
-    usage_json=$(cat "$CACHE_FILE")
+  local diff=$(( ts - now ))
+  [ "$diff" -le 0 ] && printf 'now' && return
+  local d=$(( diff / 86400 ))
+  local h=$(( (diff % 86400) / 3600 ))
+  local m=$(( (diff % 3600) / 60 ))
+  if [ "$d" -gt 0 ]; then
+    printf '%dd%dh' "$d" "$h"
+  elif [ "$h" -gt 0 ]; then
+    printf '%dh%dm' "$h" "$m"
+  else
+    printf '%dm' "$m"
   fi
-fi
-
-if [ -z "$usage_json" ]; then
-  fetched=$(fetch_usage || true)
-  if [ -n "$fetched" ]; then
-    usage_json="$fetched"
-    echo "$usage_json" > "$CACHE_FILE"
-  fi
-fi
-
-# Format ISO timestamp for 5h row: "4pm (Asia/Tokyo)"
-fmt_reset_5h() {
-  local iso="$1"
-  [ -z "$iso" ] && echo "" && return
-  TZ="Asia/Tokyo" date -d "$iso" "+%-I%p (%Z)" 2>/dev/null | sed 's/AM/am/;s/PM/pm/' || echo ""
 }
 
-# Format ISO timestamp for 7d row: "Mar 6 at 1pm (Asia/Tokyo)"
-fmt_reset_7d() {
-  local iso="$1"
-  [ -z "$iso" ] && echo "" && return
-  TZ="Asia/Tokyo" date -d "$iso" "+%b %-d at %-I%p (%Z)" 2>/dev/null | sed 's/AM/am/;s/PM/pm/' || echo ""
-}
+# Session context usage
+pct_int=${used_pct%.*}
+ctx_bar=$(progress_bar "$pct_int")
+session_part="${C_CTX}Ctx ${ctx_bar} ${pct_int}%${RESET}"
 
-# --- Lines 2 & 3: rate limit rows ---
-line2=""
-line3=""
-
-if [ -z "$usage_json" ]; then
-  line2="  ${C_GRAY}5h  ▱▱▱▱▱▱▱▱▱▱  -- (unavailable)${RESET}"
-  line3="  ${C_GRAY}7d  ▱▱▱▱▱▱▱▱▱▱  -- (unavailable)${RESET}"
-elif [ -n "$usage_json" ]; then
-  # 5h
-  limit_5h_used=$(echo "$usage_json" | jq -r '
-    .rate_limits[]?
-    | select(.window | test("5h"; "i"))
-    | .used // empty' 2>/dev/null | head -1)
-  limit_5h_max=$(echo "$usage_json" | jq -r '
-    .rate_limits[]?
-    | select(.window | test("5h"; "i"))
-    | .limit // empty' 2>/dev/null | head -1)
-  limit_5h_reset=$(echo "$usage_json" | jq -r '
-    .rate_limits[]?
-    | select(.window | test("5h"; "i"))
-    | .reset_at // .resetsAt // empty' 2>/dev/null | head -1)
-
-  # 7d
-  limit_7d_used=$(echo "$usage_json" | jq -r '
-    .rate_limits[]?
-    | select(.window | test("7d"; "i"))
-    | .used // empty' 2>/dev/null | head -1)
-  limit_7d_max=$(echo "$usage_json" | jq -r '
-    .rate_limits[]?
-    | select(.window | test("7d"; "i"))
-    | .limit // empty' 2>/dev/null | head -1)
-  limit_7d_reset=$(echo "$usage_json" | jq -r '
-    .rate_limits[]?
-    | select(.window | test("7d"; "i"))
-    | .reset_at // .resetsAt // empty' 2>/dev/null | head -1)
-
-  # Build line 2 (5h)
-  if [ -n "$limit_5h_used" ] && [ -n "$limit_5h_max" ] && [ "$limit_5h_max" -gt 0 ] 2>/dev/null; then
-    pct5=$(( limit_5h_used * 100 / limit_5h_max ))
-    col5=$(pct_color "$pct5")
-    bar5=$(progress_bar "$pct5")
-    reset5=$(fmt_reset_5h "$limit_5h_reset")
-    reset5_part=""
-    [ -n "$reset5" ] && reset5_part="  Resets ${reset5}"
-    line2="  ${C_GRAY}5h${RESET}  ${col5}${bar5}${RESET}  ${col5}${pct5}%${RESET}${C_GRAY}${reset5_part}${RESET}"
-  fi
-
-  # Build line 3 (7d)
-  if [ -n "$limit_7d_used" ] && [ -n "$limit_7d_max" ] && [ "$limit_7d_max" -gt 0 ] 2>/dev/null; then
-    pct7=$(( limit_7d_used * 100 / limit_7d_max ))
-    col7=$(pct_color "$pct7")
-    bar7=$(progress_bar "$pct7")
-    reset7=$(fmt_reset_7d "$limit_7d_reset")
-    reset7_part=""
-    [ -n "$reset7" ] && reset7_part="  Resets ${reset7}"
-    line3="  ${C_GRAY}7d${RESET}  ${col7}${bar7}${RESET}  ${col7}${pct7}%${RESET}${C_GRAY}${reset7_part}${RESET}"
-  fi
+# 5h rate limit
+pct5_raw=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty' 2>/dev/null)
+reset5_ts=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty' 2>/dev/null)
+if [ -n "$pct5_raw" ]; then
+  pct5=${pct5_raw%.*}
+  bar5=$(progress_bar "$pct5")
+  remain5=$(fmt_remaining "$reset5_ts")
+  reset5_part=""
+  [ -n "$remain5" ] && reset5_part="${C_GRAY}(${remain5})${RESET}"
+  limit5_part="${C_5H}5h ${bar5} ${pct5}%${RESET} ${reset5_part}"
+else
+  limit5_part="${C_5H}5h ${C_GRAY}░░░░░░░░░░ --${RESET}"
 fi
+
+# 7d rate limit
+pct7_raw=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty' 2>/dev/null)
+reset7_ts=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // empty' 2>/dev/null)
+if [ -n "$pct7_raw" ]; then
+  pct7=${pct7_raw%.*}
+  bar7=$(progress_bar "$pct7")
+  reset7_fmt=""
+  if [ -n "$reset7_ts" ] && [ "$reset7_ts" != "null" ]; then
+    reset7_fmt=$(TZ="Asia/Tokyo" date -d "@$reset7_ts" "+%-m/%-d %-H:%M" 2>/dev/null || true)
+  fi
+  reset7_part=""
+  [ -n "$reset7_fmt" ] && reset7_part="${C_GRAY}(~${reset7_fmt})${RESET}"
+  limit7_part="${C_7D}7d ${bar7} ${pct7}%${RESET} ${reset7_part}"
+else
+  limit7_part="${C_7D}7d ${C_GRAY}░░░░░░░░░░ --${RESET}"
+fi
+
+line2="${session_part}${SEP}${limit5_part}${SEP}${limit7_part}"
 
 # --- Output ---
 printf '%b\n' "$line1"
-[ -n "$line2" ] && printf '%b\n' "$line2"
-[ -n "$line3" ] && printf '%b\n' "$line3"
+printf '%b\n' "$line2"
