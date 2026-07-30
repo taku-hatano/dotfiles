@@ -1,18 +1,14 @@
 git:
   parseEmoji: true
-  paging:
-    colorArgs: always
-    pager: delta --dark --paging=never -s
-
+  pagers:
+    - colorArgs: always
+      pager: delta --dark --paging=never -s
 gui:
   showIcons: true
-
 os:
   editPreset: "nvim"
-
 services:
   'gitlab.fdev': 'gitlab:gitlab.fdev'
-
 customCommands:
   - key: "<c-c>"
     context: "files"
