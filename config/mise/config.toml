@@ -10,6 +10,9 @@ java = "21"
 "npm:@google/gemini-cli" = "latest"
 "npm:@openai/codex" = "latest"
 "npm:@anthropic-ai/sandbox-runtime" = "latest"
+"npm:@playwright/cli" = "latest"
+"npm:hunkdiff" = "latest"
+pinact = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["python"]
