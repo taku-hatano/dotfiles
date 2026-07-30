@@ -1,0 +1,15 @@
+#!/usr/bin/env zsh
+selected="$(herdr-ghq-select)"
+[ -z "$selected" ] && exit 0
+
+root="$(ghq root)"
+repo_dir="${root}/${selected}"
+label="${selected//[:. ]/-}"
+
+existing_id="$(herdr workspace list 2>/dev/null | jq -r --arg label "$label" '.result.workspaces[]? | select(.label==$label) | .workspace_id' | head -n1)"
+
+if [ -n "$existing_id" ]; then
+    herdr workspace focus "$existing_id" >/dev/null
+else
+    herdr workspace create --cwd "$repo_dir" --label "$label" --focus >/dev/null
+fi

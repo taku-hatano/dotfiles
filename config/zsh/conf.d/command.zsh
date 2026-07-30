@@ -29,8 +29,18 @@ diff() {
 	command diff "$@" | bat --paging=never --plain --language=diff
 }
 
+hunk-pr() {
+	local tmpfile="$(mktemp)"
+	{
+		gh pr diff "$@" > "$tmpfile"
+		hunk patch "$tmpfile"
+	} always {
+		rm -f "$tmpfile"
+	}
+}
+
 widget::ghq::source() {
-    local session color green="\e[32m" blue="\e[34m" reset="\e[m" checked="\uf631" unchecked="\uf630"
+    local session color green="\e[32m" blue="\e[34m" reset="\e[m" checked=$'\U000f063d' unchecked=$'\U000f063b'
     local sessions=($(tmux list-sessions -F "#S" 2>/dev/null))
 
     ghq list | while read -r repo; do
@@ -63,27 +73,38 @@ widget::ghq::dir() {
 }
 
 widget::ghq::session() {
-    local selected="$(widget::ghq::select)"
+    local selected="$(herdr-ghq-select)"
     if [ -z "$selected" ]; then
         return
     fi
 
     local root="$(ghq root)"
     local repo_dir="${(q)root}/$selected"
-    local session_name="${selected//[:. ]/-}"
+    local label="${selected//[:. ]/-}"
 
-    echo ${session_name}
-
-    if [ -z "$TMUX" ]; then
-        BUFFER="tmux new-session -A -s ${(q)session_name} -c ${repo_dir}"
-        zle accept-line
-    elif [ "$(tmux display-message -p "#S")" = "$session_name" ] && [ "$PWD" != "$repo_dir" ]; then
-        BUFFER="cd ${repo_dir}"
-        zle accept-line
-    else
-        tmux new-session -d -s "$session_name" -c "$repo_dir" 2>/dev/null
-        tmux switch-client -t "$session_name"
+    if ! herdr workspace list >/dev/null 2>&1; then
+        # サーバー未起動時: herdrはセッション復元時に起動時cwdを無視するため、
+        # cwd頼みの起動はせずサーバーだけ先に上げ、後段でworkspaceを明示的に作る
+        herdr server >/dev/null 2>&1 &!
+        local waited=0
+        until herdr workspace list >/dev/null 2>&1; do
+            sleep 0.1
+            waited=$((waited + 1))
+            if [ "$waited" -gt 50 ]; then
+                break
+            fi
+        done
     fi
+
+    local existing_id="$(herdr workspace list 2>/dev/null | jq -r --arg label "$label" '.result.workspaces[]? | select(.label==$label) | .workspace_id' | head -n1)"
+    if [ -n "$existing_id" ]; then
+        herdr workspace focus "$existing_id" >/dev/null
+    else
+        herdr workspace create --cwd "$repo_dir" --label "$label" --focus >/dev/null
+    fi
+
+    BUFFER="herdr"
+    zle accept-line
     zle -R -c # refresh screen
 }
 

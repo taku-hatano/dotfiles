@@ -1,0 +1,14 @@
+#!/usr/bin/env zsh
+root="$(ghq root)"
+running_json="$(herdr workspace list 2>/dev/null)"
+checked=$'\U000f063d'
+unchecked=$'\U000f063b'
+
+ghq list | while read -r repo; do
+    label="${repo//[:. ]/-}"
+    icon="$unchecked"
+    if [ -n "$running_json" ] && echo "$running_json" | jq -e --arg label "$label" '.result.workspaces[]? | select(.label==$label)' >/dev/null 2>&1; then
+        icon="$checked"
+    fi
+    printf "$icon %s\n" "$repo"
+done | fzf --exit-0 --preview="fzf-preview-git ${root}/{+2}" --preview-window="right:60%" | cut -d' ' -f2-

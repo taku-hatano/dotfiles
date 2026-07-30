@@ -1,0 +1,57 @@
+onboarding = false
+[theme]
+# tmux/nvimと合わせてtokyo-nightに統一
+name = "tokyo-night"
+
+[ui]
+agent_panel_sort = "spaces"
+
+[keys]
+# tmux (config/tmux/tmux.conf) の prefix "C-Space" に合わせる
+prefix = "ctrl+space"
+
+# bind C-n new-session
+new_workspace = "prefix+ctrl+n"
+# bind r source-file ...（config再読込）
+reload_config = "prefix+r"
+# reload_configをprefix+rに寄せたためデフォルト(prefix+r)から退避
+resize_mode = "prefix+shift+r"
+# bind | / bind \\ split-window -h（左右分割）
+split_vertical = "prefix+|"
+# bind - split-window -v（上下分割）
+split_horizontal = "prefix+minus"
+# bind C-w kill-window
+close_tab = "prefix+ctrl+w"
+# bind -r n next-window
+next_tab = "prefix+n"
+# bind -r p previous-window
+previous_tab = "prefix+p"
+# bind -r h/j/k/l select-pane
+focus_pane_left = "prefix+h"
+focus_pane_down = "prefix+j"
+focus_pane_up = "prefix+k"
+focus_pane_right = "prefix+l"
+
+# bind g popup lazygit（デフォルトのgoto=prefix+gと衝突するためalt+gに）
+[[keys.command]]
+key = "prefix+alt+g"
+type = "popup"
+command = "lazygit"
+width = "90%"
+height = "90%"
+
+# bind d popup lazydocker
+[[keys.command]]
+key = "prefix+d"
+type = "popup"
+command = "lazydocker"
+width = "90%"
+height = "90%"
+
+# zshのC-g（ghqリポジトリ選択）と同じ体験をworkspace切り替えとして提供
+[[keys.command]]
+key = "ctrl+g"
+type = "popup"
+command = "herdr-ghq-workspace"
+width = "90%"
+height = "90%"
