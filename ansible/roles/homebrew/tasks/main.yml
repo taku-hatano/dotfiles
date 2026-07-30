@@ -40,6 +40,7 @@
           - git-delta
           - git-gtr
           - glab
+          - glow
           - hashicorp/tap/terraform
           - herdr
           - hyperfine

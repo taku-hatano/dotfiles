@@ -211,3 +211,68 @@ line2="${session_part}${SEP}${limit5_part}${SEP}${limit7_part}"
 # --- Output ---
 printf '%b\n' "$line1"
 printf '%b\n' "$line2"
+
+# --- herdr usage plugin integration --------------------------------------
+# Best-effort only: must never affect the output above or add latency to
+# this script. The whole thing runs in a detached, backgrounded subshell
+# with errexit disabled internally, so any failure here (missing jq field,
+# no herdr, cache dir not writable, ...) is swallowed silently.
+(
+  set +e
+  CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/herdr-usage"
+  mkdir -p "$CACHE_DIR" 2>/dev/null
+
+  # Fast path: transplant .rate_limits from stdin straight into
+  # claude-ratelimits.json (atomic write), for collect-claude / the
+  # dashboard to pick up without waiting on a full collection cycle.
+  rl_json=$(printf '%s' "$input" | jq -c '.rate_limits // empty' 2>/dev/null)
+  if [ -n "$rl_json" ] && [ "$rl_json" != "null" ]; then
+    rl_tmp=$(mktemp "$CACHE_DIR/claude-ratelimits.json.XXXXXX" 2>/dev/null)
+    if [ -n "$rl_tmp" ]; then
+      if jq -n --argjson updated_at "$(date +%s)" --argjson rl "$rl_json" \
+        '{updated_at: $updated_at, five_hour: ($rl.five_hour // null), seven_day: ($rl.seven_day // null)}' \
+        >"$rl_tmp" 2>/dev/null; then
+        mv -f "$rl_tmp" "$CACHE_DIR/claude-ratelimits.json" 2>/dev/null
+      else
+        rm -f "$rl_tmp" 2>/dev/null
+      fi
+    fi
+  fi
+
+  # Debounced trigger of the herdr sidebar report (usage-collect handles its
+  # own debounce/locking too; this just avoids forking it every turn).
+  if [ "${HERDR_ENV:-}" = "1" ]; then
+    last_report="$CACHE_DIR/last-report"
+    trigger=1
+    if [ -f "$last_report" ]; then
+      last_mtime=$(stat -c %Y "$last_report" 2>/dev/null || echo 0)
+      case "$last_mtime" in
+        ''|*[!0-9]*) last_mtime=0 ;;
+      esac
+      now_s=$(date +%s)
+      elapsed=$(( now_s - last_mtime ))
+      [ "$elapsed" -lt 60 ] && trigger=0
+    fi
+    if [ "$trigger" -eq 1 ]; then
+      # プラグイン本体はherdr plugin link/installでどこにでも置けるため、パスを
+      # 決め打ちせずherdrのプラグインレジストリ(plugins.json)からplugin_rootを
+      # 動的に解決する。レジストリが読めない/該当エントリが無い場合は、旧来の
+      # 固定パス（symlink経由）にフォールバックする。
+      plugin_bin=""
+      registry="$HOME/.config/herdr/plugins.json"
+      if [ -r "$registry" ]; then
+        plugin_root=$(jq -r '.[]? | select(.plugin_id=="usage") | .plugin_root // empty' \
+          "$registry" 2>/dev/null | head -n1)
+        [ -n "$plugin_root" ] && plugin_bin="$plugin_root/bin/usage-collect"
+      fi
+      if [ -z "$plugin_bin" ] || [ ! -x "$plugin_bin" ]; then
+        plugin_bin="$HOME/.config/herdr/plugins/usage/bin/usage-collect"
+      fi
+      if [ -x "$plugin_bin" ]; then
+        "$plugin_bin" --report >/dev/null 2>&1
+      fi
+    fi
+  fi
+  exit 0
+) >/dev/null 2>&1 &
+disown 2>/dev/null || true

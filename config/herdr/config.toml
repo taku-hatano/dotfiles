@@ -55,3 +55,40 @@ type = "popup"
 command = "herdr-ghq-workspace"
 width = "90%"
 height = "90%"
+
+# usageプラグイン: Claude Code/Codexの利用状況ダッシュボードを開く
+# (デフォルト・既存のキーバインドにprefix+uは使われていないため採用)
+# herdr plugin pane open はサーバー側でプラグインのpane定義(placement=popup, 70%x70%)を
+# そのまま使って開いてくれるため、type="shell"でCLI呼び出しするだけで済む
+[[keys.command]]
+key = "prefix+u"
+type = "shell"
+command = "herdr plugin pane open --plugin usage --entrypoint dashboard"
+
+# herdr-file-viewerプラグイン: git対応の読み取り専用ファイルビューアをsplitで開く
+# (README推奨バインド。既存のprefix+f/prefix+shift+fは未使用のため採用)
+[[keys.command]]
+key = "prefix+f"
+type = "shell"
+command = "herdr plugin action invoke open-file-viewer --plugin herdr-file-viewer"
+
+# 同ビューアを専用tabで開く版 (README推奨バインド)
+[[keys.command]]
+key = "prefix+shift+f"
+type = "shell"
+command = "herdr plugin action invoke open-file-viewer-tab --plugin herdr-file-viewer"
+
+# デフォルトの spaces 行構成 (state_icon/workspace, branch/git_status) を維持しつつ、
+# usageプラグインがreport-metadataで報告するトークンをそれぞれ専用行に追加。
+# 横並び3連バーは読みにくいというフィードバックを受け、1行1トークンに分割。
+# トークン単位スタイル({ token = "...", fg = "..." }) はherdr 0.7.5で追加された
+# 記法（src/config/sidebar.rs のRawStyledSidebarToken）。fgはtokyo-nightの
+# blue #7aa2f7 (Claude Code) / purple #bb9af7 (Codex) で系統を色分けする。
+[ui.sidebar.spaces]
+rows = [
+  ["state_icon", "workspace"],
+  ["branch", "git_status"],
+  [{ token = "$cc_5h", fg = "#7aa2f7" }],
+  [{ token = "$cc_7d", fg = "#7aa2f7" }],
+  [{ token = "$cx_rl", fg = "#bb9af7" }],
+]
