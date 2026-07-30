@@ -949,6 +949,24 @@ require('lazy').setup {
       }
     end,
   },
+
+  -- Cheatsheet
+  {
+    'sudormrfbin/cheatsheet.nvim',
+    dependencies = {
+      { 'nvim-telescope/telescope.nvim' },
+      { 'nvim-lua/plenary.nvim' },
+    },
+    config = function()
+      require('cheatsheet').setup {
+        bundled_cheatsheets = true,
+        bundled_cheatsheets_subdir = 'cheatsheets',
+        custom_cheatsheet_dir = vim.fn.stdpath 'config' .. '/cheatsheets',
+      }
+
+      vim.keymap.set('n', '<leader>?', '<cmd>Cheatsheet<CR>', { desc = 'Open [?] Cheatsheet' })
+    end,
+  },
 }
 
 require('bufferline').setup()
