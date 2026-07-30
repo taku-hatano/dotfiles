@@ -3,40 +3,55 @@
   become_user: "{{ ansible_exec_user }}"
   shell: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
   args:
-    creates: /home/linuxbrew/.linuxbrew/bin/brew
+      creates: /home/linuxbrew/.linuxbrew/bin/brew
 
-- name: homebre | Tap coderabbitai/tap
+- name: homebrew | Tap coderabbitai/tap
   become_user: "{{ ansible_exec_user }}"
   homebrew_tap:
-    name: coderabbitai/tap
+      name: coderabbitai/tap
+
+- name: homebrew | Trust coderabbitai/tap
+  become_user: "{{ ansible_exec_user }}"
+  shell: brew trust coderabbitai/tap
+  environment:
+      PATH: "/home/linuxbrew/.linuxbrew/bin:{{ ansible_env.PATH }}"
+  changed_when: false
+
+- name: homebrew | Tap hashicorp/tap
+  become_user: "{{ ansible_exec_user }}"
+  homebrew_tap:
+      name: hashicorp/tap
 
 - name: homebrew | Install packages by homebrew
   become_user: "{{ ansible_exec_user }}"
   homebrew:
-    state: present
-    name:
-      - bat
-      - docker-completion
-      - eza
-      - fd
-      - fzf
-      - gh
-      - ghq
-      - git
-      - git-lfs
-      - git-delta
-      - git-gtr
-      - glab
-      - hyperfine
-      - lazygit
-      - lazydocker
-      - ripgrep
-      - navi
-      - neovim
-      - pipenv
-      - tmux
-      - uv
-      - yq
-      - zsh
+      state: present
+      name:
+          - bat
+          - direnv
+          - docker-completion
+          - eza
+          - fd
+          - fzf
+          - gh
+          - ghq
+          - git
+          - git-lfs
+          - git-delta
+          - git-gtr
+          - glab
+          - hashicorp/tap/terraform
+          - herdr
+          - hyperfine
+          - lazygit
+          - lazydocker
+          - ripgrep
+          - navi
+          - neovim
+          - pipenv
+          - tmux
+          - uv
+          - yq
+          - zsh
   environment:
-    PATH: "/home/linuxbrew/.linuxbrew/bin:{{ ansible_env.PATH }}"
+      PATH: "/home/linuxbrew/.linuxbrew/bin:{{ ansible_env.PATH }}"
